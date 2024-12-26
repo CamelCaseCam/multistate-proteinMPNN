@@ -1,4 +1,6 @@
 # Multistate: ProteinMPNN structure generation for proteins with multiple states
+ProteinMPNN is only designed to make sequences that fold into a single target structure. This repository contains a modification that lets it generate sequences with multiple folds. For example, [my notes](testing_notes.md) have a case study where I designed an enzyme with the same conformational shift as ParA but only 54% sequence similarity. 
+
 ## How it works
 1. You submit a "pattern" to determine the generated residues in each file and the files loaded. 
 2. ProteinMPNN gradually converges to a set of sequences that *should* fold into all structures. 

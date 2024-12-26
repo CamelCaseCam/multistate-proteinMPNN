@@ -1,0 +1,27 @@
+[{
+ "name": "MinD-ATP",
+ "modelSeeds": [
+  "202026409"
+ ],
+ "sequences": [
+  {
+   "proteinChain": {
+    "sequence": "MGRIISIVSGKGGTGKTTVTANLSVALGDRGRKVLAVDGDLTMANLSLVLGVDDPDVTLHDVLAGEANVEDAIYMTQFDNVYVLPGAVDWEHVLKADPRKLPEVIKSLKDKFDFILIDCPAGLQLDAMSAMLSGEEALLVTNPEISCLTDTMKVGIVLKKAGLAILGFVLNRYGRSDRDIPPEAAEDVMEVPLLAVIPEDPAIREGTLEGIPAVKYKPESKGAKAFVKLAEEIEKLA",
+    "count": 1
+   }
+  },
+  {
+   "ligand": {
+    "ligand": "CCD_ATP",
+    "count": 1
+   }
+  },
+  {
+   "ion": {
+    "ion": "MG",
+    "count": 1
+   }
+  }
+ ]
+}
+]

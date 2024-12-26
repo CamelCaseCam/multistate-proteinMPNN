@@ -1,0 +1,6 @@
+[submodule "src/external/ProteinMPNN"]
+	path = src/external/ProteinMPNN
+	url = https://github.com/dauparas/ProteinMPNN.git
+[submodule "src/external/Regex-ProteinMPNN"]
+	path = src/external/Regex-ProteinMPNN
+	url = https://github.com/CamelCaseCam/Regex-ProteinMPNN.git

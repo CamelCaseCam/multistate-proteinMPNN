@@ -1,0 +1,11 @@
+# Test program #1
+start all
+# Define the output to be a single chain of length 237
+output A:237
+# Load ADP/ATP versions
+structure MinD_ADP > A
+structure MinD_ATP > A
+# Everything after ">" determines how chains in the structure are mapped to chains in the output
+
+# Define fixed residues
+NEVER MIND, no conformational change so I'm ending this test right here 

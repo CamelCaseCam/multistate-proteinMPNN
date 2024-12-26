@@ -1,0 +1,27 @@
+[{
+ "name": "MinD-ADP",
+ "modelSeeds": [
+  "1572006405"
+ ],
+ "sequences": [
+  {
+   "proteinChain": {
+    "sequence": "MGRIISIVSGKGGTGKTTVTANLSVALGDRGRKVLAVDGDLTMANLSLVLGVDDPDVTLHDVLAGEANVEDAIYMTQFDNVYVLPGAVDWEHVLKADPRKLPEVIKSLKDKFDFILIDCPAGLQLDAMSAMLSGEEALLVTNPEISCLTDTMKVGIVLKKAGLAILGFVLNRYGRSDRDIPPEAAEDVMEVPLLAVIPEDPAIREGTLEGIPAVKYKPESKGAKAFVKLAEEIEKLA",
+    "count": 1
+   }
+  },
+  {
+   "ligand": {
+    "ligand": "CCD_ADP",
+    "count": 1
+   }
+  },
+  {
+   "ion": {
+    "ion": "MG",
+    "count": 1
+   }
+  }
+ ]
+}
+]

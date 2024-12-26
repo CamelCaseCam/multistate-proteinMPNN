@@ -1,0 +1,27 @@
+[{
+ "name": "ParA-2ADP",
+ "modelSeeds": [
+  "2006955696"
+ ],
+ "sequences": [
+  {
+   "proteinChain": {
+    "sequence": "MIITVASFKGGVGKTTTAVHLSAYLALQGETLLIDGDPNRSATGWGKRGSLPFKVVDERQAAKYAPKYQNIVIDTQARPEDEDLEALADGCDLLVIPSTPDALALDALMLTIETLQKLGNNRFRILLTIIPPYPSKDGDEARQLLTTAGLPLFKRGIKRYSAFQKASLNGVVVSEVSDSKAGIAWSDYKATGKEIVEEILTLEHHHHHH",
+    "count": 2
+   }
+  },
+  {
+   "ligand": {
+    "ligand": "CCD_ADP",
+    "count": 2
+   }
+  },
+  {
+   "ion": {
+    "ion": "MG",
+    "count": 2
+   }
+  }
+ ]
+}
+]

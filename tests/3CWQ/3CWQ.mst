@@ -1,0 +1,11 @@
+start none
+output A:209 B:209
+
+# Load ATP/ADP forms (note: non-protein chains are ignored)
+structure ParA_ADP:ParA_ADP.pdb > A B
+structure ParA_ATP:ParA_ATP.pdb > A B
+
+# Define fixed residues
+fix range ::9-16
+fix range ::158-160
+fix res ::37,77,101,103,163

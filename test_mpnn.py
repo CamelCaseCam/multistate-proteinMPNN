@@ -24,7 +24,7 @@ import src.external.better_mpnn as better_mpnn
 hidden_dim = 128
 num_layers = 3 
 
-WEIGHT_PATH = "external/ProteinMPNN/vanilla_model_weights/v_48_030.pt"
+WEIGHT_PATH = "src/external/ProteinMPNN/vanilla_model_weights/v_48_030.pt"
 BATCH_SIZE = 1
 MAX_LENGTH = 200000
 BACKBONE_NOISE = 0.0
@@ -171,7 +171,7 @@ def run_mpnn(parsed_path : str, assigned : list[str], fixed : list[list[int]]):
     
 
 def test_mpnn():
-    pdb_folder = "external/ProteinMPNN/inputs/PDB_complexes/pdbs/"
+    pdb_folder = "src/external/ProteinMPNN/inputs/PDB_complexes/pdbs/"
     output_dir = "test_mpnn_output/"
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
@@ -179,23 +179,29 @@ def test_mpnn():
     path_for_parsed_chains = output_dir + "parsed_pdbs.jsonl"
     path_for_assigned_chains = output_dir + "assigned_pdbs.jsonl"
     path_for_fixed_positions = output_dir + "fixed_pdbs.jsonl"
+    path_for_tied_positions = output_dir + "tied_pdbs.jsonl"
 
     fixed_positions = "1 2 3 4 5 6 7 8 23 25, 10 11 12 13 14 15 16 17 18 19 20 40"
+    tied_positions = "24, 24"
 
     os.remove(path_for_assigned_chains) if os.path.exists(path_for_assigned_chains) else None
     os.remove(path_for_parsed_chains) if os.path.exists(path_for_parsed_chains) else None
     os.remove(path_for_fixed_positions) if os.path.exists(path_for_fixed_positions) else None
+    os.remove(path_for_tied_positions) if os.path.exists(path_for_tied_positions) else None
 
-    subprocess.run(["python", "external/ProteinMPNN/helper_scripts/parse_multiple_chains.py", 
+    subprocess.run(["python", "src/external/ProteinMPNN/helper_scripts/parse_multiple_chains.py", 
                     f"--input_path={pdb_folder}", f"--output_path={path_for_parsed_chains}"])
     
-    subprocess.run(["python", "external/ProteinMPNN/helper_scripts/assign_fixed_chains.py",
+    subprocess.run(["python", "src/external/ProteinMPNN/helper_scripts/assign_fixed_chains.py",
                     f"--input_path={path_for_parsed_chains}", f"--output_path={path_for_assigned_chains}",
                     f"--chain_list", "A C"])
     
-    subprocess.run(["python", "external/ProteinMPNN/helper_scripts/make_fixed_positions_dict.py",
+    subprocess.run(["python", "src/external/ProteinMPNN/helper_scripts/make_fixed_positions_dict.py",
                     f"--input_path={path_for_parsed_chains}", f"--output_path={path_for_fixed_positions}",
                     f"--chain_list", "A C", f"--position_list", fixed_positions])
+    subprocess.run(["python", "src/external/ProteinMPNN/helper_scripts/make_tied_positions_dict.py", 
+                    f"--input_path={path_for_parsed_chains}", f"--output_path={path_for_tied_positions}",
+                    f"--chain_list", "A C", f"--position_list", tied_positions])
     
     run_mpnn(path_for_parsed_chains, ["A", "C"], 
              [[int(i) for i in subst.split()] for subst in fixed_positions.split(',')])

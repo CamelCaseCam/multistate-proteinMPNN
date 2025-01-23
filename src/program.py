@@ -49,11 +49,61 @@ def parse_program(program_file_path, debugparams : DebugParams | None = None):
         # Patterns take the form `chain:length`
         chain, length = pattern.split(':')
         chainlengths[chain] = int(length)
+
+    # Parse schedule line
+    schedule_line = program[2]
+    if not schedule_line.startswith('schedule '):
+        # Skip schedule line
+        schedule_code = "[(0.1, 0.1)] * 100"
+        program = [""] + program
+    else:
+        schedule_code = schedule_line[len('schedule '):]
+    try:
+        schedule = eval(schedule_code)  # This isn't safe and could definitely be done better, but I'm lazy and this doesn't need to be secure
+        if not isinstance(schedule, list) or not all(isinstance(item, tuple) and len(item) == 2 for item in schedule):
+            raise ValueError("Schedule must evaluate to a list of (temperature, NC) tuples")
+    except Exception as e:
+        raise ValueError(f"Failed to parse schedule: {e}")
+    program = program[3:]
+
+    # Check for `tie` line
+    ties : list[list[ChainResidue]] = []
+    if program[0].startswith('tie'):
+        # Handle tie line
+        tiesstr = program[0].split(' ')[1:]
+        for tie in tiesstr:
+            tied_groups = tie.split(':')
+            rangelen = None
+            for i, group in enumerate(tied_groups):
+                chn, rng = group.split('.')
+                chn = chn.strip()
+                rng = rng.strip()
+
+                # Convert range to a list of indices
+                start, end = rng.split('-')
+                start = int(start) - 1
+                end = int(end) # End is inclusive but also 1-indexed, so they cancel out
+                rng = list(range(start, end))
+                if rangelen is None:
+                    rangelen = len(rng)
+                else:
+                    assert len(rng) == rangelen, "All ranges in a tie group must have the same length"
+                tied_groups[i] = (chn, rng)
+
+            # Now, convert this into a list of the form [[chn1-1, chn2-1], [chn1-2, chn2-2], ...]
+            i = 0
+            while i < rangelen:
+                tied = []
+                for group in tied_groups:
+                    tied.append(ChainResidue(group[0], group[1][i]))
+                ties.append(tied)
+                i += 1
+        program = program[1:]
+                
     
     bias = []
 
     # Load pdbs
-    program = program[2:]
     startidx = 0
     
     seq : dict[str, list[ChainResidue]] = {}
@@ -138,7 +188,7 @@ def parse_program(program_file_path, debugparams : DebugParams | None = None):
 
         # Get extra
         extra = ':'.join(tokens[2:])
-        parse_line(mode, type, pdb, chain, extra, seq, fixed_positions, bias, aminos, mapping, alphabet)
+        parse_line(mode, type, pdb, chain, extra, seq, fixed_positions, bias, aminos, mapping, chainlengths, alphabet)
     
     # Error checking! Make sure the same output residues are fixed in all proteins
     # Get residues from the first protein
@@ -146,8 +196,10 @@ def parse_program(program_file_path, debugparams : DebugParams | None = None):
     output : dict[str, str] = {k : list("-" * v) for k,v in chainlengths.items()}    # Output sequences
     # Convert using mapping
     for res in fixed_positions[list(fixed_positions.keys())[0]]:
-        # If the chain isn't in the mapping, ignore it
+        # If the chain isn't in the mapping, call it fixed
         if res.chain not in mapping[list(fixed_positions.keys())[0]]:
+            fixed_residues.append(res)
+            # Not adding to output because it's not in the output
             continue
         output_chain = mapping[list(fixed_positions.keys())[0]][res.chain]
         fixed_residues.append(ChainResidue(output_chain, res.residue))
@@ -164,16 +216,19 @@ def parse_program(program_file_path, debugparams : DebugParams | None = None):
             output_mapping = mapping[protein]
             # Make sure all residues that are fixed in the output chain are fixed in the input chain, and all that aren't aren't
             for res in seq[protein]:
-                if res in fixed_positions[protein]:
+                # If the residue's chain isn't in the mapping, it must be fixed
+                if res.chain not in output_mapping:
+                    assert res in fixed_residues, f"Residue {res} in protein {protein} is not found in all proteins, so it must be fixed"
+                elif res in fixed_positions[protein]:
                     output_chain = output_mapping[res.chain]
                     assert ChainResidue(output_chain, res.residue) in fixed_residues, f"Residue {res} in protein {protein} is fixed in the output chain {output_chain} but not in all proteins"
                     # Make sure it's the same residue
                     assert aminos[protein][res.chain][res.residue] == output[output_chain][res.residue], f"Residue {res} in protein {protein} is fixed in the output chain {output_chain} but is a different amino acid"
                 else:
-                    assert ChainResidue(output_chain, res.residue) not in fixed_residues, f"Residue {res} in protein {protein} is not fixed in the output chain {output_chain} but is fixed in other proteins"
+                    assert ChainResidue(res.chain, res.residue) not in fixed_residues, f"Residue {res} in protein {protein} is not fixed in the output chain {output_chain} but is fixed in other proteins"
 
     # All done!
-    return seq, aminos, database, fixed_positions, fixed_residues, bias, mapping, chainlengths, output
+    return seq, aminos, database, fixed_positions, fixed_residues, bias, mapping, chainlengths, output, schedule, ties
         
 def load_pdb(pdb : str, location : str, seq : dict[str, list[ChainResidue]], aminos : dict[str, dict[str, str]], 
              database : list[dict], alphabet = "ACDEFGHIKLMNPQRSTVWYX"):
@@ -225,7 +280,7 @@ def parse_line(mode : str, type : str, pdb : str, chain: str, extra : str,
         biastokens = extra.split()
         biasval = float(biastokens[-1])
         biasaminos = biastokens[-2]
-        biasaminos = aminos.split(',')
+        biasaminos = biasaminos.split(',')
         extra = ' '.join(biastokens[:-2])
         # Get chainresidues that match the type, pdb, chain, and extra
         matching_chainresidues = match(type, pdb, chain, extra, seq, aminos, alphabet)
@@ -234,7 +289,7 @@ def parse_line(mode : str, type : str, pdb : str, chain: str, extra : str,
         # Create a 1-hot bias vector for each residue
         biasdict = {}
         for chain in chainlengths:
-            biasdict[chain] = [[biasval for amino in alphabet] for _ in range(chainlengths[protein])]
+            biasdict[chain] = [[biasval for amino in alphabet] for _ in range(chainlengths[chain])]
         # Now set matching residues to the bias value for the specified amino acids
         for protein in matching_chainresidues:
             for res in matching_chainresidues[protein]:

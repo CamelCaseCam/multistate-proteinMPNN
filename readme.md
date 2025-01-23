@@ -42,3 +42,4 @@ I made this in like three days. What you see is what you get. I've tested everyt
 
  - Adding tests (especially with the bias functionality)
  - Making contributions to improve the core algorithm, since it tends to get "stuck" before the final generation and I suspect this leads to suboptimal proteins being generated
+ 

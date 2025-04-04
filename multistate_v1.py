@@ -106,7 +106,7 @@ def inference(input_file, output_path, generations=100, seqs=10, save_traj=True)
                     for chain in output.keys():
                         f.write("".join(output[chain]) + ":")
                     f.write("\n")
-            gen_temp = temperatures[j]
+            gen_temp = schedule[j]
             log_probs = run_generation(model, database, assigned_obj, fixed_pos_obj, fixed_residues, bias, mapping, 
                                             chainlengths, output, schedule[j][0], schedule[j][1], ties, allow_no_change=not use_coupling, use_coupling=use_coupling)
             last_log_probs = log_probs

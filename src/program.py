@@ -380,7 +380,7 @@ def match(type : str, pdb : str, chain : str, extra : str, seq : dict[str, list[
                 elif chain in aminos[protein]:
                     chainresidues = []
                     # Check matching residues
-                    matches = re.findall(pattern, aminos[protein][chain])
+                    matches = re.finditer(pattern, aminos[protein][chain])
                     for match in matches:
                         start = match.start()
                         end = match.end()
